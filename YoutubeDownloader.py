@@ -217,10 +217,8 @@ def get_url_from_clipboard() -> str:
         url = (url_from_clipboard.splitlines()[0]).strip()
         if ("youtube.com" in url and "/" in url and "=" in url):
             return url
-            # if('\n' in url_from_clipboard):
-            #     return url_from_clipboard.split("\n")[0]
-            # else:
-            #     return url_from_clipboard
+        elif ("youtube.com" in url and "/" in url and "shorts" in url):
+            return url
         else:
             return None
     except:
