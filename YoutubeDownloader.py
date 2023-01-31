@@ -139,7 +139,7 @@ def download_video_progressive_top_720P(streams: StreamQuery, download_path: str
         video = get_highest_resolution_progressive_stream(streams)
         video_resolution = str(video.resolution).upper()
         print(f"> Resolution of video: {video_resolution}")
-        output_file = f"[YouTube][{video_resolution}]{file_name_ori}.mp4"
+        output_file = f"{file_name_ori}.{video_resolution}-YouTube.mp4"
         if (not isFileExist(download_path, output_file, video)):
             video.download(output_path=download_path,
                            filename=output_file)
@@ -281,7 +281,7 @@ def check_if_file_is_complete(file_path: str, stream: Stream) -> bool:
 
 
 def check_integrity_of_video(download_path: str, video_file: str, callback_to_delete):
-    # ffmpeg_cmd = f'ffmpeg -v error -i "[YouTube][1080P]Yoga - Gymnastics with Lera.mp4" -f null - >error.log 2>&1'
+    # ffmpeg_cmd = f'ffmpeg -v error -i "Yoga - Gymnastics with Lera.1080P-YouTube.mp4" -f null - >error.log 2>&1'
     # ffmpeg_cmd = f' cd /d "{download_path}" && ffmpeg -v error -i "{video_file}" -f null - '
     # cmd_keep = f'cmd /c "{ffmpeg_cmd}"'
     # os.system(cmd_keep)
@@ -338,8 +338,10 @@ def main():
     yt = YouTube(youtube_url, on_progress_callback=on_progress,
                  on_complete_callback=on_complete)  # proxies=my_proxies
     title = yt.title
-    print(f'> Video title:\n    {title}')
-    file_name_ori = re.sub(r'[\\/*?:"<>|&]', "-", title)
+    author = yt.author
+    print(f'> Video title:\n    {title}, \n  Author: {author}\n')
+    author_ori = re.sub(r'[\\/*?:"<>|&]', ".", author)
+    file_name_ori = f"[{author_ori}]" + re.sub(r'[\\/*?:"<>|&]', "-", title)
     if (file_name_ori.endswith(".")):
         file_name_ori = file_name_ori[0: -1]
     if (file_name_ori != title):
@@ -353,12 +355,12 @@ def main():
             video = use_proper_resolution(video, streams)
             video_resolution = str(video.resolution).upper()
             print(f"> [Part]Resolution of video: {video_resolution}")
-            file_name = f"[{video_resolution}]{file_name_ori}"
-            youtube_prefix = "[YouTube]"
-            youtube_part_prefix = f"{youtube_prefix}.Part"
-            video_file = f"{youtube_part_prefix}.{file_name}.mp4"
-            audio_file = f"{youtube_part_prefix}.{file_name}.aac"
-            output_file = f"{youtube_prefix}{file_name}.mp4"
+            file_name = f"{file_name_ori}.{video_resolution}"
+            youtube_suffix = "-YouTube"
+            youtube_part_prefix = f"{youtube_suffix}.Part"
+            video_file = f"{file_name}{youtube_part_prefix}.mp4"
+            audio_file = f"{file_name}{youtube_part_prefix}.aac"
+            output_file = f"{file_name}{youtube_suffix}.mp4"
             if (isFileExist(download_path, output_file)):
                 print(
                     f"> Video(with audio) file already exists:\n    {output_file}")
@@ -392,7 +394,7 @@ def main():
 
                 # print(
                 #     f'\n> Run command to delete intermediate files[{youtube_part_prefix}*]:\n    cd /d "{download_path}" && del "{youtube_part_prefix}*" ')
-                # check_integrity_of_video(r'E:\HDC\Downloads', "[YouTube][1080P]Yoga - Gymnastics with Lera.mp4", lambda: clear_intermediate_files(
+                # check_integrity_of_video(r'E:\HDC\Downloads', "Yoga - Gymnastics with Lera.1080P-YouTube.mp4", lambda: clear_intermediate_files(
                 #     "download_path", "video_file", "audio_file"))
                 check_integrity_of_video(download_path, output_file, lambda: clear_intermediate_files(
                     download_path, video_file, audio_file))
@@ -437,7 +439,7 @@ def clear_intermediate_files(download_path: str, video_file: str, audio_file: st
 # 但是下载1080P默认是 False 的,在config.ini 设置为 True 之后才会下载到无声需要合成的视频
 
 
-# 防止合成失败, 默认保留中间文件, 即 [Youtube].Part*.mp4/*.aac, 待到用户确认没问题, 自行删除.
+# 防止合成失败, 默认保留中间文件, 即 *-YouTube.Part.mp4/aac, 待到用户确认没问题, 自行删除.
 # 文件没有下载完整, 会发生问题? 加入大小检测???
 if __name__ == "__main__":
     try:
